@@ -107,6 +107,8 @@
     </AppxManifest>
     <Content Include="Schemas\HostConfig.json" />
     <None Include="Prototype1_TemporaryKey.pfx" />
+    <Content Include="Schemas\AdaptiveCard.json" />
+    <Content Include="Schemas\AdaptiveCard_Todo.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\Default.rd.xml" />

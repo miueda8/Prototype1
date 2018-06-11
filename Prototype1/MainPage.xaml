@@ -8,7 +8,20 @@
     mc:Ignorable="d">
 
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="MainPanel">
-        <TextBox x:Name="TodoTitle" Height="30" Width="300" Margin="10" TextWrapping="Wrap" AcceptsReturn="True"/>
-        <Button Content="New Todo" Click="OnNewTodo" Margin="10" HorizontalAlignment="Right"/>
+        <Button Content="New Todo" Click="OnNewTodo" Margin="10" HorizontalAlignment="Center"/>
+        <StackPanel x:Name="CreatePanel" Margin="10"></StackPanel>
+
+        <ListView x:Name="TodoList">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="10"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+
+        <StackPanel x:Name="TodoPanel">
+
+        </StackPanel>
     </StackPanel>
 </Page>

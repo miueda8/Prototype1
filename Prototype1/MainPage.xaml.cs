@@ -9,6 +9,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows.UI.Shell;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -26,43 +27,103 @@ namespace Prototype1
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        string jsonString;
+
+        private UserActivityChannel _userActivityChannel;
+        private UserActivity _userActivity;
+        private UserActivitySession _userActivitySession;
 
         public MainPage()
         {
             this.InitializeComponent();
-            LoadHostConfig();
         }
 
-        private async void LoadHostConfig()
+        protected async override void OnNavigatedTo(NavigationEventArgs e)
         {
-            Windows.Storage.StorageFolder installedLocation = Windows.ApplicationModel.Package.Current.InstalledLocation;
-            StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Schemas\\HostConfig.json"));
-            using (var inputStream = await file.OpenReadAsync())
-            using (var classicStream = inputStream.AsStreamForRead())
-            using (var streamReader = new StreamReader(classicStream))
-            {
-                while (streamReader.Peek() >= 0)
-                {
-                    jsonString += streamReader.ReadLine();
-                }
-            }
+            _userActivityChannel = UserActivityChannel.GetDefault();
+            _userActivity = await _userActivityChannel.GetOrCreateUserActivityAsync("Todo");
+        }
+
+        private static async Task<string> LoadHostConfig()
+        {
+            StorageFile hostConfigFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Schemas/HostConfig.json"));
+            string jsonString = await FileIO.ReadTextAsync(hostConfigFile);
+            return jsonString;
         }
 
         private async void OnNewTodo(object sender, RoutedEventArgs e)
         {
             AdaptiveCardRenderer renderer = new AdaptiveCardRenderer();
 
-            var hostConfig = AdaptiveHostConfig.FromJsonString(jsonString);
+            string hostConfigString = await LoadHostConfig();
+            var hostConfig = AdaptiveHostConfig.FromJsonString(hostConfigString);
             renderer.HostConfig = hostConfig.HostConfig;
 
-            string json = new JsonCreator().CreateJson(TodoTitle.Text);
+            //string hostConfigJson = renderer.HostConfig.ToString();
+
+            string json = await JsonCreator.CreateJson();
             AdaptiveCardParseResult card = AdaptiveCard.FromJsonString(json);
             var renderResult = renderer.RenderAdaptiveCard(card.AdaptiveCard);
+            renderResult.Action += RenderResult_OnAction;
 
             if (renderResult != null)
             {
-                MainPanel.Children.Add(renderResult.FrameworkElement);
+                CreatePanel.Children.Add(renderResult.FrameworkElement);
+            }
+        }
+
+        private async void RenderResult_OnAction(RenderedAdaptiveCard sender, AdaptiveActionEventArgs e)
+        {
+            if (e.Action.ActionType == ActionType.Submit)
+            {
+                AdaptiveCardRenderer renderer = new AdaptiveCardRenderer();
+                var hostConfig = new AdaptiveHostConfig()
+                {
+                    ContainerStyles =
+                    {
+                        Default =
+                        {
+                            BackgroundColor = Windows.UI.Color.FromArgb(20,0,0,0)
+                        }
+                    }
+                };
+                renderer.HostConfig = hostConfig;
+
+                ValueSet set = e.Inputs.AsValueSet();
+                string todoJson = JsonCreator.CreateTodoJson(set["title"] as string, set["dueDate"] as string, set["url"] as string);
+                AdaptiveCardParseResult card = AdaptiveCard.FromJsonString(todoJson);
+                var renderResult = renderer.RenderAdaptiveCard(card.AdaptiveCard);
+                renderResult.Action += TodoCard_OnAction;
+                if (renderResult != null)
+                {
+                    //TodoPanel.Children.Add(renderResult.FrameworkElement);
+                    TodoList.Items.Add(renderResult.FrameworkElement);
+                }
+            }
+        }
+
+        private async void TodoCard_OnAction(RenderedAdaptiveCard sender, AdaptiveActionEventArgs e)
+        {
+            //AdaptiveCard card = sender.OriginatingCard;
+            //AdaptiveTextBlock text_done = new AdaptiveTextBlock
+            //{
+            //    Text = "Done",
+            //    Wrap = true
+            //};
+            //var element = card.Body.First() as IAdaptiveTextBlock;
+            //element.
+            //card.Body.Insert(0, text_done);
+            //var doneJson = card.ToJson();
+
+            if (e.Action.ActionType == ActionType.Submit)
+            {
+                _userActivity.ActivationUri = new Uri("https://www.google.co.jp/");
+                _userActivity.VisualElements.DisplayText = "Done";
+                //_userActivity.VisualElements.Content = card;
+                //_userActivity.VisualElements.Content = AdaptiveCardBuilder.
+
+                await _userActivity.SaveAsync();
+                _userActivitySession?.Dispose();
+                _userActivitySession = _userActivity.CreateSession();
             }
         }
     }

@@ -1,0 +1,67 @@
+﻿{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.0",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Title"
+    },
+    {
+      "type": "Input.Text",
+      "id": "title",
+      "placeholder": "text",
+      "style": "text"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Due Date"
+    },
+    {
+      "type": "Input.Date",
+      "id": "dueDate",
+      "title": "Select due date"
+    },
+    {
+      "type": "TextBlock",
+      "text": "URL"
+    },
+    {
+      "type": "Input.Text",
+      "id": "url",
+      "placeholder": "url",
+      "style": "url"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Importance"
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "importance",
+      "style": "expanded",
+      "isMultiSelect": false,
+      "value": "1",
+      "choices": [
+        {
+          "title": "P0",
+          "value": "1"
+        },
+        {
+          "title": "P1",
+          "value": "2"
+        },
+        {
+          "title": "P3",
+          "value": "3"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Submit",
+      "title": "Create"
+    }
+  ]
+}
