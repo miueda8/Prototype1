@@ -58,8 +58,6 @@ namespace Prototype1
             var hostConfig = AdaptiveHostConfig.FromJsonString(hostConfigString);
             renderer.HostConfig = hostConfig.HostConfig;
 
-            //string hostConfigJson = renderer.HostConfig.ToString();
-
             string json = await JsonCreator.CreateJson();
             AdaptiveCardParseResult card = AdaptiveCard.FromJsonString(json);
             var renderResult = renderer.RenderAdaptiveCard(card.AdaptiveCard);
@@ -75,6 +73,8 @@ namespace Prototype1
         {
             if (e.Action.ActionType == ActionType.Submit)
             {
+                ValueSet set = e.Inputs.AsValueSet();
+
                 AdaptiveCardRenderer renderer = new AdaptiveCardRenderer();
                 var hostConfig = new AdaptiveHostConfig()
                 {
@@ -88,43 +88,31 @@ namespace Prototype1
                 };
                 renderer.HostConfig = hostConfig;
 
-                ValueSet set = e.Inputs.AsValueSet();
-                string todoJson = JsonCreator.CreateTodoJson(set["title"] as string, set["dueDate"] as string, set["url"] as string);
+                string todoJson = await JsonCreator.CreateTodoJson(set["title"] as string, set["dueDate"] as string, set["url"] as string, set["importance"] as string);
                 AdaptiveCardParseResult card = AdaptiveCard.FromJsonString(todoJson);
                 var renderResult = renderer.RenderAdaptiveCard(card.AdaptiveCard);
                 renderResult.Action += TodoCard_OnAction;
                 if (renderResult != null)
                 {
-                    //TodoPanel.Children.Add(renderResult.FrameworkElement);
                     TodoList.Items.Add(renderResult.FrameworkElement);
+                }
+
+                string url = set["url"] as string;
+                if (url != null && url != "")
+                {
+                    _userActivity.ActivationUri = new Uri(url);
+                    _userActivity.VisualElements.Content = AdaptiveCardBuilder.CreateAdaptiveCardFromJson(todoJson);
+
+                    await _userActivity.SaveAsync();
+                    _userActivitySession?.Dispose();
+                    _userActivitySession = _userActivity.CreateSession();
                 }
             }
         }
 
         private async void TodoCard_OnAction(RenderedAdaptiveCard sender, AdaptiveActionEventArgs e)
         {
-            //AdaptiveCard card = sender.OriginatingCard;
-            //AdaptiveTextBlock text_done = new AdaptiveTextBlock
-            //{
-            //    Text = "Done",
-            //    Wrap = true
-            //};
-            //var element = card.Body.First() as IAdaptiveTextBlock;
-            //element.
-            //card.Body.Insert(0, text_done);
-            //var doneJson = card.ToJson();
-
-            if (e.Action.ActionType == ActionType.Submit)
-            {
-                _userActivity.ActivationUri = new Uri("https://www.google.co.jp/");
-                _userActivity.VisualElements.DisplayText = "Done";
-                //_userActivity.VisualElements.Content = card;
-                //_userActivity.VisualElements.Content = AdaptiveCardBuilder.
-
-                await _userActivity.SaveAsync();
-                _userActivitySession?.Dispose();
-                _userActivitySession = _userActivity.CreateSession();
-            }
+            TodoList.Items.Remove(sender.FrameworkElement);
         }
     }
 }

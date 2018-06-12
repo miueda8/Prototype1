@@ -94,7 +94,7 @@
     "actionAlignment": "stretch"
   },
   "adaptiveCard": {
-    "allowCustomStyle": false
+    "allowCustomStyle": true
   },
   "imageSet": {
     "imageSize": "medium",
