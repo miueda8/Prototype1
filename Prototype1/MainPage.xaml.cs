@@ -94,7 +94,7 @@ namespace Prototype1
                 renderResult.Action += TodoCard_OnAction;
                 if (renderResult != null)
                 {
-                    TodoList.Items.Add(renderResult.FrameworkElement);
+                    TodoList.Items.Insert(0, renderResult.FrameworkElement);
                 }
 
                 string url = set["url"] as string;
