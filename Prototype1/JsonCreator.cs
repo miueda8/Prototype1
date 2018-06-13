@@ -98,7 +98,7 @@ namespace Prototype1
             AdaptiveColumnSet columnSet = new AdaptiveColumnSet();
             AdaptiveColumn colum = new AdaptiveColumn
             {
-                Width = AdaptiveColumnWidth.Auto
+                Width = AdaptiveColumnWidth.Stretch
             };
 
             AdaptiveContainer container = new AdaptiveContainer
